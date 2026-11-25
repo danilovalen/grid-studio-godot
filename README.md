@@ -7,7 +7,7 @@ Two layers:
 
 - **`shell/`**, for any game: the stage, input actions and prompts, the Theme and components, the motion table,
   saves and the profile, unlocks and achievements, audio and music, text tables, the platform adapter, the grid.
-- **`core/`**, for turn-based and tick-based grid games (wee, Cell, Seeds): the rules' shape, state, intents and
+- **`core/`**, for turn-based and tick-based grid games: the rules' shape, state, intents and
   events, the run host, beats, the board kept by id, the cell picker, the board camera, maps as data.
 
 Nothing goes in until a game's step needs it.
