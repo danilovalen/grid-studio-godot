@@ -1,10 +1,10 @@
 class_name EntityView
 extends Node3D
 
-## Draws one entity of a board picture, and later plays its motions. It never decides a rule.
+## Draws one entity of a board picture. It never decides a rule.
 
 ## The shapes this entity is drawn as. Setting them redraws it, and setting the same shapes again
-## keeps its meshes.
+## keeps its meshes. If you change a shape in place, nothing is redrawn until they are set again.
 var shapes: Array[BoardPicture.Shape] = []:
 	set = _set_shapes
 

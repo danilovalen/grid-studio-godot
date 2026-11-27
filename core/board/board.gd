@@ -1,14 +1,14 @@
 class_name Board
 extends Node3D
 
-## Draws a board picture. Its terrain goes in one grid map, and each entity is an EntityView kept by
-## its id. Drawing the same picture again creates nothing new, and an entity that moved is the same
-## node, moved.
+## Draws a board picture: its terrain in one grid map, and each entity as an EntityView kept by its
+## id, so an entity that moves is the same node, moved.
 
 const ENTITY_VIEW: PackedScene = preload("res://addons/studio/core/board/entity_view.tscn")
 
 var grid := SquareGrid.new()
 ## What the board shows. Setting it redraws the board, reusing the nodes of entities still in it.
+## If you change the picture in place, nothing is redrawn until it is set again.
 var picture: BoardPicture = null:
 	set = _set_picture
 var _views: Dictionary[String, EntityView] = {}
