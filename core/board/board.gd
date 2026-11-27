@@ -1,29 +1,29 @@
 class_name Board
 extends Node3D
 
-## Draws a board picture. Its terrain goes in one grid map, and each thing is a ThingView kept by
-## its id. Drawing the same picture again creates nothing new, and a thing that moved is the same
+## Draws a board picture. Its terrain goes in one grid map, and each entity is a EntityView kept by
+## its id. Drawing the same picture again creates nothing new, and an entity that moved is the same
 ## node, moved.
 
-const THING_VIEW: PackedScene = preload("res://addons/studio/core/board/thing_view.tscn")
+const ENTITY_VIEW: PackedScene = preload("res://addons/studio/core/board/entity_view.tscn")
 
 var grid := SquareGrid.new()
-var _views: Dictionary[String, ThingView] = {}
+var _views: Dictionary[String, EntityView] = {}
 var _terrain_items: Dictionary[StringName, int] = {}
 var _terrain_drawn: String = ""
 
 @onready var _terrain: GridMap = $Terrain
-@onready var _things: Node3D = $Things
+@onready var _entities: Node3D = $Entities
 
 
-## Draws a picture. Nodes for things still in it are reused.
+## Draws a picture. Nodes for entities still in it are reused.
 func present(picture: BoardPicture) -> void:
 	_present_terrain(picture)
-	_present_things(picture)
+	_present_entities(picture)
 
 
-## The view drawing a thing, or null if the board has none with that id.
-func thing_view(id: String) -> ThingView:
+## The view drawing an entity, or null if the board has none with that id.
+func entity_view(id: String) -> EntityView:
 	return _views.get(id)
 
 
@@ -61,20 +61,20 @@ func _library(picture: BoardPicture) -> MeshLibrary:
 	return library
 
 
-func _present_things(picture: BoardPicture) -> void:
+func _present_entities(picture: BoardPicture) -> void:
 	var still: Dictionary[String, bool] = {}
-	for thing in picture.things:
-		still[thing.id] = true
-		var view: ThingView = _views.get(thing.id)
+	for entity in picture.entities:
+		still[entity.id] = true
+		var view: EntityView = _views.get(entity.id)
 		if view == null:
-			view = THING_VIEW.instantiate()
-			view.name = "Thing %s" % thing.id.validate_node_name()
-			_things.add_child(view)
-			_views[thing.id] = view
-		view.position = grid.to_world(Vector3i(thing.cell.x, thing.cell.y, 0))
-		view.present(thing.shapes)
+			view = ENTITY_VIEW.instantiate()
+			view.name = "Entity %s" % entity.id.validate_node_name()
+			_entities.add_child(view)
+			_views[entity.id] = view
+		view.position = grid.to_world(Vector3i(entity.cell.x, entity.cell.y, 0))
+		view.present(entity.shapes)
 	for id: String in _views.keys():
 		if not still.has(id):
-			_things.remove_child(_views[id])
+			_entities.remove_child(_views[id])
 			_views[id].queue_free()
 			_views.erase(id)

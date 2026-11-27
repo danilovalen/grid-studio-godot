@@ -9,4 +9,4 @@ script = ExtResource("1")
 
 [node name="Marks" type="Node3D" parent="." unique_id=563743568]
 
-[node name="Things" type="Node3D" parent="." unique_id=1167030881]
+[node name="Entities" type="Node3D" parent="." unique_id=1167030881]

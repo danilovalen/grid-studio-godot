@@ -1,7 +1,7 @@
 extends GutTest
 
 ## The board draws a picture, and drawing again reuses its nodes. The same picture makes nothing
-## new, and a thing that moved or changed its look keeps its node.
+## new, and an entity that moved or changed its look keeps its node.
 
 const BOARD: PackedScene = preload("res://addons/studio/core/board/board.tscn")
 
@@ -23,11 +23,11 @@ func _picture(crate_cell: Vector2i, crate_colour: Color) -> BoardPicture:
 		&"raised": BoardPicture.Shape.new(BOX, Vector3.ONE, Vector3(0, 0.5, 0)),
 	}
 	picture.terrain.assign([&"raised", &"ground", &"ground", &"ground", &"ground", &"raised"])
-	var crate := BoardPicture.Thing.new("crate", crate_cell)
+	var crate := BoardPicture.Entity.new("crate", crate_cell)
 	crate.shapes = [BoardPicture.Shape.new(BOX, Vector3(0.8, 0.8, 0.8), Vector3.ZERO, crate_colour)]
-	var lamp := BoardPicture.Thing.new("lamp", Vector2i(2, 0))
+	var lamp := BoardPicture.Entity.new("lamp", Vector2i(2, 0))
 	lamp.shapes = [BoardPicture.Shape.new(BoardPicture.Shape.Kind.SPHERE, Vector3(0.5, 0.5, 0.5))]
-	picture.things = [crate, lamp]
+	picture.entities = [crate, lamp]
 	return picture
 
 
@@ -47,41 +47,41 @@ func test_the_terrain_fills_every_cell() -> void:
 func test_the_same_picture_twice_makes_no_new_node() -> void:
 	board.present(_picture(Vector2i(1, 0), Color.RED))
 	var before := _count_nodes(board)
-	var crate := board.thing_view("crate")
+	var crate := board.entity_view("crate")
 	board.present(_picture(Vector2i(1, 0), Color.RED))
 	assert_eq(_count_nodes(board), before)
-	assert_same(board.thing_view("crate"), crate)
+	assert_same(board.entity_view("crate"), crate)
 
 
-func test_a_thing_that_moves_is_the_same_node_moved() -> void:
+func test_an_entity_that_moves_is_the_same_node_moved() -> void:
 	board.present(_picture(Vector2i(1, 0), Color.RED))
-	var crate := board.thing_view("crate")
+	var crate := board.entity_view("crate")
 	var was := crate.position
 	board.present(_picture(Vector2i(1, 1), Color.RED))
-	assert_same(board.thing_view("crate"), crate)
+	assert_same(board.entity_view("crate"), crate)
 	assert_ne(crate.position, was)
 
 
-func test_a_thing_that_changes_its_look_keeps_its_node() -> void:
+func test_an_entity_that_changes_its_look_keeps_its_node() -> void:
 	board.present(_picture(Vector2i(1, 0), Color.RED))
-	var crate := board.thing_view("crate")
+	var crate := board.entity_view("crate")
 	board.present(_picture(Vector2i(1, 0), Color.BLUE))
-	assert_same(board.thing_view("crate"), crate)
+	assert_same(board.entity_view("crate"), crate)
 
 
-func test_a_thing_that_left_is_removed() -> void:
+func test_an_entity_that_left_is_removed() -> void:
 	board.present(_picture(Vector2i(1, 0), Color.RED))
 	var picture := _picture(Vector2i(1, 0), Color.RED)
-	picture.things.resize(1)
+	picture.entities.resize(1)
 	board.present(picture)
-	assert_null(board.thing_view("lamp"))
-	assert_eq(board.get_node("Things").get_child_count(), 1)
+	assert_null(board.entity_view("lamp"))
+	assert_eq(board.get_node("Entities").get_child_count(), 1)
 
 
-func test_a_thing_that_comes_back_keeps_its_name() -> void:
+func test_an_entity_that_comes_back_keeps_its_name() -> void:
 	board.present(_picture(Vector2i(1, 0), Color.RED))
 	var picture := _picture(Vector2i(1, 0), Color.RED)
-	picture.things.resize(1)
+	picture.entities.resize(1)
 	board.present(picture)
 	board.present(_picture(Vector2i(1, 0), Color.RED))
-	assert_eq(String(board.thing_view("lamp").name), "Thing lamp")
+	assert_eq(String(board.entity_view("lamp").name), "Entity lamp")

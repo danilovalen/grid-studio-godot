@@ -1,7 +1,7 @@
-class_name ThingView
+class_name EntityView
 extends Node3D
 
-## Draws one thing of a board picture, and later plays its motions. It never decides a rule.
+## Draws one entity of a board picture, and later plays its motions. It never decides a rule.
 
 var _drawn: String = ""
 

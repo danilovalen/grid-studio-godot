@@ -5,11 +5,11 @@ extends RefCounted
 ## its own state into a picture, and the board draws the picture.
 ##
 ## The terrain is every cell of the board, row by row, each naming one of the terrain looks, such
-## as a flat ground or a raised cell. The things are everything that acts, each kept by its id, so
-## the board can move the same node when a thing moves.
+## as a flat ground or a raised cell. The entities are everything that acts, each kept by its id, so
+## the board can move the same node when an entity moves.
 
 
-## One shape of a thing or a terrain look. offset is where its centre sits, from the middle of the
+## One shape of an entity or a terrain look. offset is where its centre sits, from the middle of the
 ## cell's ground, in cells. rotation turns it, in degrees.
 class Shape:
 	enum Kind { BOX, CYLINDER, OCTAGON, PRISM, SPHERE }
@@ -67,15 +67,15 @@ class Shape:
 		return var_to_str([kind, size, offset, colour, rotation])
 
 
-## One thing that acts, at a cell, drawn as its shapes.
-class Thing:
+## One entity that acts, at a cell, drawn as its shapes.
+class Entity:
 	var id: String = ""
 	var cell := Vector2i.ZERO
 	var shapes: Array[Shape] = []
 
-	func _init(thing_id: String = "", thing_cell := Vector2i.ZERO) -> void:
-		id = thing_id
-		cell = thing_cell
+	func _init(entity_id: String = "", entity_cell := Vector2i.ZERO) -> void:
+		id = entity_id
+		cell = entity_cell
 
 
 var size := Vector2i.ZERO
@@ -83,7 +83,7 @@ var size := Vector2i.ZERO
 var terrain: Array[StringName] = []
 ## The one shape each terrain look is drawn with.
 var terrain_looks: Dictionary[StringName, Shape] = {}
-var things: Array[Thing] = []
+var entities: Array[Entity] = []
 
 
 ## The look name at a cell. The cell must be inside the board.
