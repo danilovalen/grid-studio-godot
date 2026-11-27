@@ -19,8 +19,8 @@ func _picture(crate_cell: Vector2i, crate_colour: Color) -> BoardPicture:
 	var picture := BoardPicture.new()
 	picture.size = Vector2i(3, 2)
 	picture.terrain_looks = {
-		&"ground": BoardPicture.Shape.new(BOX, Vector3(1, 0.1, 1), Vector3(0, -0.05, 0)),
-		&"raised": BoardPicture.Shape.new(BOX, Vector3.ONE, Vector3(0, 0.5, 0)),
+		&"ground": _look([BoardPicture.Shape.new(BOX, Vector3(1, 0.1, 1), Vector3(0, -0.05, 0))]),
+		&"raised": _look([BoardPicture.Shape.new(BOX, Vector3.ONE, Vector3(0, 0.5, 0))]),
 	}
 	picture.terrain.assign([&"raised", &"ground", &"ground", &"ground", &"ground", &"raised"])
 	var crate := BoardPicture.Entity.new("crate", crate_cell)
@@ -29,6 +29,10 @@ func _picture(crate_cell: Vector2i, crate_colour: Color) -> BoardPicture:
 	lamp.shapes = [BoardPicture.Shape.new(BoardPicture.Shape.Kind.SPHERE, Vector3(0.5, 0.5, 0.5))]
 	picture.entities = [crate, lamp]
 	return picture
+
+
+func _look(shapes: Array[BoardPicture.Shape]) -> BoardPicture.Look:
+	return BoardPicture.Look.new(shapes)
 
 
 func _count_nodes(node: Node) -> int:
@@ -91,9 +95,9 @@ func test_the_grid_sets_how_big_a_cell_and_a_level_are() -> void:
 	board.grid.level_height = 2.0
 	board.picture = _picture(Vector2i(1, 0), Color.RED)
 	var terrain: GridMap = board.get_node("Terrain")
-	var raised: Transform3D = terrain.mesh_library.get_item_mesh_transform(1)
-	assert_eq(raised.basis.get_scale(), Vector3(1, 2, 1))
-	assert_eq(raised.origin, Vector3(0, 1, 0))
+	var raised := terrain.mesh_library.get_item_mesh(1).get_aabb()
+	assert_almost_eq(raised.position.y, 0.0, 0.001)
+	assert_almost_eq(raised.size.y, 2.0, 0.001)
 	assert_eq(board.entity_view("crate").scale, Vector3(1, 2, 1))
 
 
@@ -110,3 +114,18 @@ func test_shapes_set_before_the_view_is_ready_are_drawn_when_it_is() -> void:
 	view.shapes = [BoardPicture.Shape.new()]
 	add_child_autofree(view)
 	assert_eq(view.get_node("%Body").get_child_count(), 1)
+
+
+func test_a_look_of_several_shapes_is_one_mesh_with_a_surface_each() -> void:
+	var picture := _picture(Vector2i(1, 0), Color.RED)
+	var floor_shape := BoardPicture.Shape.new(BOX, Vector3(1, 0.1, 1), Vector3(0, -0.05, 0))
+	var puddle := BoardPicture.Shape.new(
+		BoardPicture.Shape.Kind.CYLINDER, Vector3(0.8, 0.02, 0.8), Vector3(0, 0.01, 0), Color.BLUE
+	)
+	picture.terrain_looks[&"ground"] = _look([floor_shape, puddle])
+	board.picture = picture
+	var terrain: GridMap = board.get_node("Terrain")
+	var ground := terrain.mesh_library.get_item_mesh(0)
+	assert_eq(ground.get_surface_count(), 2)
+	var material: StandardMaterial3D = ground.surface_get_material(1)
+	assert_eq(material.albedo_color, Color.BLUE)

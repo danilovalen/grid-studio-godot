@@ -37,7 +37,7 @@ class Shape:
 		rotation = shape_rotation
 
 	## The mesh of this shape, at its size and in its colour.
-	func mesh() -> Mesh:
+	func mesh() -> PrimitiveMesh:
 		var made: PrimitiveMesh
 		match kind:
 			Kind.CYLINDER, Kind.OCTAGON:
@@ -70,6 +70,19 @@ class Shape:
 		return var_to_str([kind, size, offset, colour, rotation])
 
 
+## How one kind of terrain cell is drawn: its shapes, merged into one mesh, such as a floor with a
+## puddle on it.
+class Look:
+	var shapes: Array[Shape] = []
+
+	func _init(look_shapes: Array[Shape] = []) -> void:
+		shapes = look_shapes
+
+	## Everything that decides how the look is drawn, in one line.
+	func describe() -> String:
+		return "\n".join(shapes.map(func(shape: Shape) -> String: return shape.describe()))
+
+
 ## One entity that acts, at a cell, drawn as its shapes.
 class Entity:
 	var id: String = ""
@@ -84,8 +97,8 @@ class Entity:
 var size := Vector2i.ZERO
 ## One look name per cell, row by row.
 var terrain: Array[StringName] = []
-## The one shape each terrain look is drawn with.
-var terrain_looks: Dictionary[StringName, Shape] = {}
+## How each terrain look is drawn.
+var terrain_looks: Dictionary[StringName, Look] = {}
 var entities: Array[Entity] = []
 
 

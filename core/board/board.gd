@@ -69,13 +69,23 @@ func _library() -> MeshLibrary:
 		var item := _terrain_items.size()
 		_terrain_items[look] = item
 		library.create_item(item)
-		var shape := picture.terrain_looks[look]
-		library.set_item_mesh(item, shape.mesh())
-		var turn := Basis.from_euler(shape.rotation * PI / 180.0)
-		var scale := _cell_scale()
-		var placed := Transform3D(Basis.from_scale(scale) * turn, shape.offset * scale)
-		library.set_item_mesh_transform(item, placed)
+		library.set_item_mesh(item, _merged(picture.terrain_looks[look]))
 	return library
+
+
+## A look's shapes as one mesh, one surface each, placed and scaled to the cell.
+func _merged(look: BoardPicture.Look) -> ArrayMesh:
+	var merged := ArrayMesh.new()
+	var scale := _cell_scale()
+	for shape in look.shapes:
+		var part := shape.mesh()
+		var turn := Basis.from_euler(shape.rotation * PI / 180.0)
+		var placed := Transform3D(Basis.from_scale(scale) * turn, shape.offset * scale)
+		var tool := SurfaceTool.new()
+		tool.append_from(part, 0, placed)
+		tool.set_material(part.material)
+		tool.commit(merged)
+	return merged
 
 
 func _redraw_entities() -> void:
