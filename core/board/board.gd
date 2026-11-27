@@ -57,6 +57,7 @@ func _redraw_terrain() -> void:
 	for y in picture.size.y:
 		for x in picture.size.x:
 			var look := picture.terrain_at(Vector2i(x, y))
+			assert(_terrain_items.has(look), "terrain look %s has no shape" % look)
 			_terrain.set_cell_item(Vector3i(x, 0, y), _terrain_items[look])
 
 
