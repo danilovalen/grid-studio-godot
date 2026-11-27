@@ -37,7 +37,7 @@ func _present_terrain(picture: BoardPicture) -> void:
 	_terrain_drawn = drawn
 	_terrain.clear()
 	_terrain.mesh_library = _library(picture)
-	_terrain.cell_size = Vector3(grid.cell_size, grid.level_height, grid.cell_size)
+	_terrain.cell_size = _cell_scale()
 	_terrain.cell_center_y = false
 	# A grid map's cells are (x, height, y), so the board's rows run along its third axis.
 	for y in picture.size.y:
@@ -57,7 +57,9 @@ func _library(picture: BoardPicture) -> MeshLibrary:
 		var shape := picture.terrain_looks[look]
 		library.set_item_mesh(item, shape.mesh())
 		var turn := Basis.from_euler(shape.rotation * PI / 180.0)
-		library.set_item_mesh_transform(item, Transform3D(turn, shape.offset))
+		var scale := _cell_scale()
+		var placed := Transform3D(Basis.from_scale(scale) * turn, shape.offset * scale)
+		library.set_item_mesh_transform(item, placed)
 	return library
 
 
@@ -72,9 +74,15 @@ func _present_entities(picture: BoardPicture) -> void:
 			_entities.add_child(view)
 			_views[entity.id] = view
 		view.position = grid.to_world(Vector3i(entity.cell.x, entity.cell.y, 0))
+		view.scale = _cell_scale()
 		view.present(entity.shapes)
 	for id: String in _views.keys():
 		if not still.has(id):
 			_entities.remove_child(_views[id])
 			_views[id].queue_free()
 			_views.erase(id)
+
+
+## How big one cell across and one level up are in the world.
+func _cell_scale() -> Vector3:
+	return Vector3(grid.cell_size, grid.level_height, grid.cell_size)

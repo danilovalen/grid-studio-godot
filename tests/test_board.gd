@@ -85,3 +85,13 @@ func test_an_entity_that_comes_back_keeps_its_name() -> void:
 	board.present(picture)
 	board.present(_picture(Vector2i(1, 0), Color.RED))
 	assert_eq(String(board.entity_view("lamp").name), "Entity lamp")
+
+
+func test_the_grid_sets_how_big_a_cell_and_a_level_are() -> void:
+	board.grid.level_height = 2.0
+	board.present(_picture(Vector2i(1, 0), Color.RED))
+	var terrain: GridMap = board.get_node("Terrain")
+	var raised: Transform3D = terrain.mesh_library.get_item_mesh_transform(1)
+	assert_eq(raised.basis.get_scale(), Vector3(1, 2, 1))
+	assert_eq(raised.origin, Vector3(0, 1, 0))
+	assert_eq(board.entity_view("crate").scale, Vector3(1, 2, 1))

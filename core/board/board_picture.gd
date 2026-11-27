@@ -7,10 +7,13 @@ extends RefCounted
 ## The terrain is every cell of the board, row by row, each naming one of the terrain looks, such
 ## as a flat ground or a raised cell. The entities are everything that acts, each kept by its id, so
 ## the board can move the same node when an entity moves.
+##
+## Sizes and offsets are in cells across and levels up, so a full cell is Vector3.ONE. The board's
+## grid says how big a cell and a level are in the world.
 
 
 ## One shape of an entity or a terrain look. offset is where its centre sits, from the middle of the
-## cell's ground, in cells. rotation turns it, in degrees.
+## cell's ground. rotation turns it, in degrees.
 class Shape:
 	enum Kind { BOX, CYLINDER, OCTAGON, PRISM, SPHERE }
 
