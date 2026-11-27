@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/studio/core/board/thing_view.gd" id="1"]
+
+[node name="ThingView" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true

@@ -1,34 +1,37 @@
 class_name Board
 extends Node3D
 
-## Draws a board picture. Its terrain goes in one grid map, and its things are nodes kept by id.
-## Drawing the same picture again creates nothing new, and a thing that moved is the same node,
-## moved.
+## Draws a board picture. Its terrain goes in one grid map, and each thing is a ThingView kept by
+## its id. Drawing the same picture again creates nothing new, and a thing that moved is the same
+## node, moved.
 
-const PIECE: PackedScene = preload("res://addons/studio/core/board/piece.tscn")
+const THING_VIEW: PackedScene = preload("res://addons/studio/core/board/thing_view.tscn")
 
 var grid := SquareGrid.new()
-var _pieces: Dictionary[String, BoardPiece] = {}
+var _views: Dictionary[String, ThingView] = {}
 var _terrain_items: Dictionary[StringName, int] = {}
 var _terrain_drawn: String = ""
 
 @onready var _terrain: GridMap = $Terrain
-@onready var _pieces_layer: Node3D = $Pieces
+@onready var _things: Node3D = $Things
 
 
 ## Draws the whole picture from nothing, reusing every node that is still there.
 func present(picture: BoardPicture) -> void:
 	_present_terrain(picture)
-	_present_pieces(picture)
+	_present_things(picture)
 
 
-## The node drawing a thing, or null if the board has none with that id.
-func piece_node(id: String) -> BoardPiece:
-	return _pieces.get(id)
+## The view drawing a thing, or null if the board has none with that id.
+func thing_view(id: String) -> ThingView:
+	return _views.get(id)
 
 
 func _present_terrain(picture: BoardPicture) -> void:
-	var said := var_to_str([picture.size, picture.terrain, _looks_said(picture)])
+	var looks := PackedStringArray()
+	for look: StringName in picture.terrain_looks:
+		looks.append("%s %s" % [look, picture.terrain_looks[look].describe()])
+	var said := var_to_str([picture.size, picture.terrain, looks])
 	if said == _terrain_drawn:
 		return
 	_terrain_drawn = said
@@ -50,36 +53,26 @@ func _library(picture: BoardPicture) -> MeshLibrary:
 		var item := _terrain_items.size()
 		_terrain_items[look] = item
 		library.create_item(item)
-		var part := picture.terrain_looks[look]
-		library.set_item_mesh(item, Shapes.mesh(part))
-		var turn := Basis.from_euler(part.rotation * PI / 180.0)
-		library.set_item_mesh_transform(item, Transform3D(turn, part.offset))
+		var shape := picture.terrain_looks[look]
+		library.set_item_mesh(item, shape.mesh())
+		var turn := Basis.from_euler(shape.rotation * PI / 180.0)
+		library.set_item_mesh_transform(item, Transform3D(turn, shape.offset))
 	return library
 
 
-static func _looks_said(picture: BoardPicture) -> String:
-	var lines := PackedStringArray()
-	for look: StringName in picture.terrain_looks:
-		var part := picture.terrain_looks[look]
-		lines.append(
-			var_to_str([look, part.shape, part.size, part.offset, part.colour, part.rotation])
-		)
-	return "\n".join(lines)
-
-
-func _present_pieces(picture: BoardPicture) -> void:
+func _present_things(picture: BoardPicture) -> void:
 	var still: Dictionary[String, bool] = {}
 	for thing in picture.things:
 		still[thing.id] = true
-		var node: BoardPiece = _pieces.get(thing.id)
-		if node == null:
-			node = PIECE.instantiate()
-			node.name = "Piece %s" % thing.id.validate_node_name()
-			_pieces_layer.add_child(node)
-			_pieces[thing.id] = node
-		node.position = grid.to_world(Vector3i(thing.cell.x, thing.cell.y, 0))
-		node.present(thing.parts)
-	for id: String in _pieces.keys():
+		var view: ThingView = _views.get(thing.id)
+		if view == null:
+			view = THING_VIEW.instantiate()
+			view.name = "Thing %s" % thing.id.validate_node_name()
+			_things.add_child(view)
+			_views[thing.id] = view
+		view.position = grid.to_world(Vector3i(thing.cell.x, thing.cell.y, 0))
+		view.present(thing.shapes)
+	for id: String in _views.keys():
 		if not still.has(id):
-			_pieces[id].queue_free()
-			_pieces.erase(id)
+			_views[id].queue_free()
+			_views.erase(id)
