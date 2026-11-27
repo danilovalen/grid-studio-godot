@@ -75,3 +75,13 @@ func test_a_thing_that_left_is_removed() -> void:
 	picture.things.resize(1)
 	board.present(picture)
 	assert_null(board.thing_view("lamp"))
+	assert_eq(board.get_node("Things").get_child_count(), 1)
+
+
+func test_a_thing_that_comes_back_keeps_its_name() -> void:
+	board.present(_picture(Vector2i(1, 0), Color.RED))
+	var picture := _picture(Vector2i(1, 0), Color.RED)
+	picture.things.resize(1)
+	board.present(picture)
+	board.present(_picture(Vector2i(1, 0), Color.RED))
+	assert_eq(String(board.thing_view("lamp").name), "Thing lamp")

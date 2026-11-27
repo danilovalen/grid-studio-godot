@@ -16,7 +16,7 @@ var _terrain_drawn: String = ""
 @onready var _things: Node3D = $Things
 
 
-## Draws the whole picture from nothing, reusing every node that is still there.
+## Draws a picture. Nodes for things still in it are reused.
 func present(picture: BoardPicture) -> void:
 	_present_terrain(picture)
 	_present_things(picture)
@@ -31,14 +31,15 @@ func _present_terrain(picture: BoardPicture) -> void:
 	var looks := PackedStringArray()
 	for look: StringName in picture.terrain_looks:
 		looks.append("%s %s" % [look, picture.terrain_looks[look].describe()])
-	var said := var_to_str([picture.size, picture.terrain, looks])
-	if said == _terrain_drawn:
+	var drawn := var_to_str([picture.size, picture.terrain, looks])
+	if drawn == _terrain_drawn:
 		return
-	_terrain_drawn = said
+	_terrain_drawn = drawn
 	_terrain.clear()
 	_terrain.mesh_library = _library(picture)
 	_terrain.cell_size = Vector3(grid.cell_size, grid.level_height, grid.cell_size)
 	_terrain.cell_center_y = false
+	# A grid map's cells are (x, height, y), so the board's rows run along its third axis.
 	for y in picture.size.y:
 		for x in picture.size.x:
 			var look := picture.terrain_at(Vector2i(x, y))
@@ -74,5 +75,6 @@ func _present_things(picture: BoardPicture) -> void:
 		view.present(thing.shapes)
 	for id: String in _views.keys():
 		if not still.has(id):
+			_things.remove_child(_views[id])
 			_views[id].queue_free()
 			_views.erase(id)

@@ -10,12 +10,12 @@ var _drawn: String = ""
 
 ## Draws the shapes. If they are the same as last time, the meshes are kept.
 func present(shapes: Array[BoardPicture.Shape]) -> void:
-	var said := "\n".join(
+	var drawn := "\n".join(
 		shapes.map(func(shape: BoardPicture.Shape) -> String: return shape.describe())
 	)
-	if said == _drawn:
+	if drawn == _drawn:
 		return
-	_drawn = said
+	_drawn = drawn
 	for child in _body.get_children():
 		_body.remove_child(child)
 		child.queue_free()
