@@ -5,12 +5,11 @@ one commit, and moves it forward on purpose.
 
 Two layers:
 
-- **`shell/`**, for any game: the stage, input actions and prompts, the Theme and components, the motion table,
-  saves and the profile, unlocks and achievements, audio and music, text tables, the platform adapter, the grid.
-- **`core/`**, for turn-based and tick-based grid games: the rules' shape, state, intents and
-  events, the run host, beats, the board kept by id, the cell picker, the board camera, maps as data.
+- **`shell/`**, for any game: the grid, and the platform adapter.
+- **`core/`**, for turn-based and tick-based grid games: the rules' shape, the game state, intents and events, and the
+  board.
 
-Nothing goes in until a game's step needs it.
+Something goes in only when a game needs it.
 
 ## The one rule
 
@@ -22,5 +21,5 @@ against its own words.
 
 - Style: `gdformat --check .` and `gdlint .` from this folder (gdtoolkit 4.5.0).
 - Tests: `tests/`, run by GUT from a game that includes the toolkit.
-- Typed GDScript throughout; every base says its job in its first lines and marks what a game must fill in
-  `@abstract` (Godot 4.5 and later).
+- Every script is typed GDScript. Each base class says its job in its first lines, and marks what a game must fill in
+  with `@abstract`.

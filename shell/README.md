@@ -1,3 +1,3 @@
 # shell
 
-For any game: the grid, the platform adapter, and later the stage, input, Theme, motion, saves, audio, text.
+For any game: the grid, and the platform adapter that connects a game to the device it runs on.
