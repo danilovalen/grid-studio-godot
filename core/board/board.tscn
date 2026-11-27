@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://brr3ef0hrd6bq"]
+
+[node name="Board" type="Node3D" unique_id=1977708532]
+
+[node name="Floor" type="GridMap" parent="." unique_id=1875546398]
+
+[node name="Walls" type="GridMap" parent="." unique_id=1367996732]
+
+[node name="Fixtures" type="Node3D" parent="." unique_id=1994874800]
+
+[node name="Marks" type="Node3D" parent="." unique_id=563743568]
+
+[node name="Pieces" type="Node3D" parent="." unique_id=1167030881]
+
+[node name="Beams" type="Node3D" parent="." unique_id=130885999]
+
+[node name="Labels" type="Node3D" parent="." unique_id=175189555]
