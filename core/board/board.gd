@@ -1,13 +1,16 @@
 class_name Board
 extends Node3D
 
-## Draws a board picture. Its terrain goes in one grid map, and each entity is a EntityView kept by
+## Draws a board picture. Its terrain goes in one grid map, and each entity is an EntityView kept by
 ## its id. Drawing the same picture again creates nothing new, and an entity that moved is the same
 ## node, moved.
 
 const ENTITY_VIEW: PackedScene = preload("res://addons/studio/core/board/entity_view.tscn")
 
 var grid := SquareGrid.new()
+## What the board shows. Setting it redraws the board, reusing the nodes of entities still in it.
+var picture: BoardPicture = null:
+	set = _set_picture
 var _views: Dictionary[String, EntityView] = {}
 var _terrain_items: Dictionary[StringName, int] = {}
 var _terrain_drawn: String = ""
@@ -16,10 +19,14 @@ var _terrain_drawn: String = ""
 @onready var _entities: Node3D = $Entities
 
 
-## Draws a picture. Nodes for entities still in it are reused.
-func present(picture: BoardPicture) -> void:
-	_present_terrain(picture)
-	_present_entities(picture)
+func _ready() -> void:
+	_redraw()
+
+
+func _set_picture(new_picture: BoardPicture) -> void:
+	picture = new_picture
+	if is_node_ready():
+		_redraw()
 
 
 ## The view drawing an entity, or null if the board has none with that id.
@@ -27,7 +34,14 @@ func entity_view(id: String) -> EntityView:
 	return _views.get(id)
 
 
-func _present_terrain(picture: BoardPicture) -> void:
+func _redraw() -> void:
+	if picture == null:
+		return
+	_redraw_terrain()
+	_redraw_entities()
+
+
+func _redraw_terrain() -> void:
 	var looks := PackedStringArray()
 	for look: StringName in picture.terrain_looks:
 		looks.append("%s %s" % [look, picture.terrain_looks[look].describe()])
@@ -36,7 +50,7 @@ func _present_terrain(picture: BoardPicture) -> void:
 		return
 	_terrain_drawn = drawn
 	_terrain.clear()
-	_terrain.mesh_library = _library(picture)
+	_terrain.mesh_library = _library()
 	_terrain.cell_size = _cell_scale()
 	_terrain.cell_center_y = false
 	# A grid map's cells are (x, height, y), so the board's rows run along its third axis.
@@ -47,7 +61,7 @@ func _present_terrain(picture: BoardPicture) -> void:
 
 
 ## One library item per terrain look.
-func _library(picture: BoardPicture) -> MeshLibrary:
+func _library() -> MeshLibrary:
 	var library := MeshLibrary.new()
 	_terrain_items.clear()
 	for look: StringName in picture.terrain_looks:
@@ -63,7 +77,7 @@ func _library(picture: BoardPicture) -> MeshLibrary:
 	return library
 
 
-func _present_entities(picture: BoardPicture) -> void:
+func _redraw_entities() -> void:
 	var still: Dictionary[String, bool] = {}
 	for entity in picture.entities:
 		still[entity.id] = true
@@ -75,7 +89,7 @@ func _present_entities(picture: BoardPicture) -> void:
 			_views[entity.id] = view
 		view.position = grid.to_world(Vector3i(entity.cell.x, entity.cell.y, 0))
 		view.scale = _cell_scale()
-		view.present(entity.shapes)
+		view.shapes = entity.shapes
 	for id: String in _views.keys():
 		if not still.has(id):
 			_entities.remove_child(_views[id])

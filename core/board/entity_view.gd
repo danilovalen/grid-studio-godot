@@ -3,19 +3,33 @@ extends Node3D
 
 ## Draws one entity of a board picture, and later plays its motions. It never decides a rule.
 
+## The shapes this entity is drawn as. Setting them redraws it, and setting the same shapes again
+## keeps its meshes.
+var shapes: Array[BoardPicture.Shape] = []:
+	set = _set_shapes
+
 var _drawn: String = ""
 
 @onready var _body: Node3D = %Body
 
 
-## Draws the shapes. If they are the same as last time, the meshes are kept.
-func present(shapes: Array[BoardPicture.Shape]) -> void:
-	var drawn := "\n".join(
+func _ready() -> void:
+	_redraw()
+
+
+func _set_shapes(new_shapes: Array[BoardPicture.Shape]) -> void:
+	shapes = new_shapes
+	if is_node_ready():
+		_redraw()
+
+
+func _redraw() -> void:
+	var now := "\n".join(
 		shapes.map(func(shape: BoardPicture.Shape) -> String: return shape.describe())
 	)
-	if drawn == _drawn:
+	if now == _drawn:
 		return
-	_drawn = drawn
+	_drawn = now
 	for child in _body.get_children():
 		_body.remove_child(child)
 		child.queue_free()
