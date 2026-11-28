@@ -13,15 +13,17 @@ extends RefCounted
 
 
 ## One shape of an entity or a terrain look. offset is where its centre sits, from the middle of the
-## cell's ground. rotation turns it, in degrees.
+## cell's ground. rotation turns it, in degrees. A MADE shape is a mesh the game built itself, in
+## cells, with its own materials: its size and colour are not used.
 class Shape:
-	enum Kind { BOX, CYLINDER, OCTAGON, PRISM, SPHERE }
+	enum Kind { BOX, CYLINDER, OCTAGON, PRISM, SPHERE, MADE }
 
 	var kind := Kind.BOX
 	var size := Vector3.ONE
 	var offset := Vector3.ZERO
 	var colour := Color.WHITE
 	var rotation := Vector3.ZERO
+	var made: Mesh = null
 
 	func _init(
 		shape_kind := Kind.BOX,
@@ -36,9 +38,17 @@ class Shape:
 		colour = shape_colour
 		rotation = shape_rotation
 
+	## A shape drawn as a mesh the game built.
+	static func of_mesh(mesh: Mesh, shape_offset := Vector3.ZERO) -> Shape:
+		var shape := Shape.new(Kind.MADE, Vector3.ONE, shape_offset)
+		shape.made = mesh
+		return shape
+
 	## The mesh of this shape, at its size and in its colour.
-	func mesh() -> PrimitiveMesh:
-		var made: PrimitiveMesh
+	func mesh() -> Mesh:
+		if kind == Kind.MADE:
+			return made
+		var primitive: PrimitiveMesh
 		match kind:
 			Kind.CYLINDER, Kind.OCTAGON:
 				var round := CylinderMesh.new()
@@ -46,28 +56,29 @@ class Shape:
 				round.bottom_radius = size.x / 2.0
 				round.height = size.y
 				round.radial_segments = 8 if kind == Kind.OCTAGON else 24
-				made = round
+				primitive = round
 			Kind.PRISM:
 				var prism := PrismMesh.new()
 				prism.size = size
-				made = prism
+				primitive = prism
 			Kind.SPHERE:
 				var ball := SphereMesh.new()
 				ball.radius = size.x / 2.0
 				ball.height = size.y
-				made = ball
+				primitive = ball
 			Kind.BOX:
 				var box := BoxMesh.new()
 				box.size = size
-				made = box
+				primitive = box
 		var material := StandardMaterial3D.new()
 		material.albedo_color = colour
-		made.material = material
-		return made
+		primitive.material = material
+		return primitive
 
 	## Everything that decides how the shape looks, in one line, to tell two shapes apart.
 	func describe() -> String:
-		return var_to_str([kind, size, offset, colour, rotation])
+		var mesh_id := made.get_instance_id() if made else 0
+		return var_to_str([kind, size, offset, colour, rotation, mesh_id])
 
 
 ## How one kind of terrain cell is drawn: its shapes, merged into one mesh, such as a floor with a

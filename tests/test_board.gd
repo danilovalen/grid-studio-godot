@@ -129,3 +129,30 @@ func test_a_look_of_several_shapes_is_one_mesh_with_a_surface_each() -> void:
 	assert_eq(ground.get_surface_count(), 2)
 	var material: StandardMaterial3D = ground.surface_get_material(1)
 	assert_eq(material.albedo_color, Color.BLUE)
+
+
+func test_a_made_shape_keeps_every_surface_and_material() -> void:
+	var made := ArrayMesh.new()
+	for colour in [Color.RED, Color.GREEN]:
+		var tool := SurfaceTool.new()
+		tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for corner in [Vector3.ZERO, Vector3.RIGHT, Vector3.UP]:
+			tool.add_vertex(corner)
+		var material := StandardMaterial3D.new()
+		material.albedo_color = colour
+		tool.set_material(material)
+		tool.commit(made)
+	var picture := _picture(Vector2i(1, 0), Color.RED)
+	picture.terrain_looks[&"ground"] = _look([BoardPicture.Shape.of_mesh(made)])
+	board.picture = picture
+	var terrain: GridMap = board.get_node("Terrain")
+	var ground := terrain.mesh_library.get_item_mesh(0)
+	assert_eq(ground.get_surface_count(), 2)
+	var material: StandardMaterial3D = ground.surface_get_material(1)
+	assert_eq(material.albedo_color, Color.GREEN)
+
+
+func test_two_made_shapes_with_other_meshes_are_told_apart() -> void:
+	var one := BoardPicture.Shape.of_mesh(ArrayMesh.new())
+	var other := BoardPicture.Shape.of_mesh(ArrayMesh.new())
+	assert_ne(one.describe(), other.describe())

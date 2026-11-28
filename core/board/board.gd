@@ -73,7 +73,8 @@ func _library() -> MeshLibrary:
 	return library
 
 
-## A look's shapes as one mesh, one surface each, placed and scaled to the cell.
+## A look's shapes as one mesh, a surface for each surface of each shape, placed and scaled to the
+## cell.
 func _merged(look: BoardPicture.Look) -> ArrayMesh:
 	var merged := ArrayMesh.new()
 	var scale := _cell_scale()
@@ -81,10 +82,11 @@ func _merged(look: BoardPicture.Look) -> ArrayMesh:
 		var part := shape.mesh()
 		var turn := Basis.from_euler(shape.rotation * PI / 180.0)
 		var placed := Transform3D(Basis.from_scale(scale) * turn, shape.offset * scale)
-		var tool := SurfaceTool.new()
-		tool.append_from(part, 0, placed)
-		tool.set_material(part.material)
-		tool.commit(merged)
+		for surface in part.get_surface_count():
+			var tool := SurfaceTool.new()
+			tool.append_from(part, surface, placed)
+			tool.set_material(part.surface_get_material(surface))
+			tool.commit(merged)
 	return merged
 
 
